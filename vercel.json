@@ -4,6 +4,10 @@
       {
         "src": "server.js",
         "use": "@vercel/node"
+      },
+      {
+        "src": "*.html",
+        "use": "@vercel/static"
       }
     ],
     "routes": [
@@ -12,8 +16,12 @@
         "dest": "/server.js"
       },
       {
-        "src": "/(.*)",
-        "dest": "/frontend/$1"
+        "src": "/relay-control",
+        "dest": "/relay-control.html"
+      },
+      {
+        "src": "/",
+        "dest": "/index.html"
       }
     ]
   }
