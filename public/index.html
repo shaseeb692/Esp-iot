@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>ESP LED Control</title>
+  <script>
+    const apiUrl = "https://your-vercel-project.vercel.app/api";
+
+    async function updateLED(status) {
+      await fetch(`${apiUrl}/update-led`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ deviceId: "DEVICE123", ledStatus: status })
+      });
+      document.getElementById("status").innerText = status ? "ON" : "OFF";
+    }
+  </script>
+</head>
+<body>
+  <h1>LED Control Panel</h1>
+  <button onclick="updateLED(true)">Turn ON</button>
+  <button onclick="updateLED(false)">Turn OFF</button>
+  <p>LED Status: <span id="status">OFF</span></p>
+</body>
+</html>
