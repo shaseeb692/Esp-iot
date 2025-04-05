@@ -33,7 +33,15 @@ const Device = mongoose.model('Device', deviceSchema);
 // API to register device
 app.post('/api/register', async (req, res) => {
   const { deviceId } = req.body;
+
   try {
+    // Check if the device already exists
+    const existingDevice = await Device.findOne({ deviceId });
+    if (existingDevice) {
+      return res.status(200).json({ message: 'Device already registered' });
+    }
+
+    // If not, register new device
     const device = new Device({ deviceId, relays: [] });
     await device.save();
     res.status(201).json({ message: 'Device registered successfully' });
