@@ -1,12 +1,16 @@
 const mongoose = require("mongoose");
-let conn = null;
 
+let conn = null;
 const uri = process.env.MONGODB_URI;
 
 const deviceSchema = new mongoose.Schema({
   deviceId: String,
-  ledStatus: Boolean,
+  relays: [{
+    relayId: String,
+    status: Boolean
+  }],
 });
+
 let Device;
 
 async function connectDB() {
@@ -28,27 +32,41 @@ module.exports = async (req, res) => {
     const { deviceId } = req.body;
     let device = await Device.findOne({ deviceId });
     if (!device) {
-      device = new Device({ deviceId, ledStatus: false });
+      device = new Device({ deviceId, relays: [] });
       await device.save();
     }
-    return res.status(200).json({ ledStatus: device.ledStatus });
+    res.status(200).json({ message: "Device registered", deviceId: device.deviceId });
   }
 
-  if (method === "POST" && url === "/update-led") {
-    const { deviceId, ledStatus } = req.body;
-    const device = await Device.findOneAndUpdate(
-      { deviceId },
-      { ledStatus },
-      { new: true }
-    );
-    return res.status(200).json({ ledStatus: device.ledStatus });
+  else if (method === "POST" && url === "/update-relay") {
+    const { deviceId, relayId, status } = req.body;
+    const device = await Device.findOne({ deviceId });
+    if (device) {
+      const relay = device.relays.find(r => r.relayId === relayId);
+      if (relay) {
+        relay.status = status;
+        await device.save();
+      } else {
+        device.relays.push({ relayId, status });
+        await device.save();
+      }
+      res.status(200).json({ message: "Relay updated", relays: device.relays });
+    } else {
+      res.status(404).json({ error: "Device not found" });
+    }
   }
 
-  if (method === "GET" && url.startsWith("/led-status")) {
+  else if (method === "GET" && url.startsWith("/get-relays")) {
     const deviceId = url.split("/")[2];
     const device = await Device.findOne({ deviceId });
-    return res.status(200).json({ ledStatus: device ? device.ledStatus : false });
+    if (device) {
+      res.status(200).json({ relays: device.relays });
+    } else {
+      res.status(404).json({ error: "Device not found" });
+    }
   }
 
-  return res.status(404).json({ error: "Not Found" });
+  else {
+    res.status(404).json({ error: "Not Found" });
+  }
 };
