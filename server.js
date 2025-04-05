@@ -7,7 +7,14 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-app.use(cors());
+// CORS setup: Allow requests from your frontend domain
+const corsOptions = {
+  origin: 'https://esp-iot-ha.vercel.app',  // Replace with your frontend URL
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
+};
+
+app.use(cors(corsOptions));  // Use the CORS options here
 app.use(bodyParser.json());
 
 // MongoDB Connection
@@ -27,6 +34,10 @@ const Device = mongoose.model('Device', deviceSchema);
 app.post('/api/register', async (req, res) => {
   const { deviceId } = req.body;
   try {
+    const existingDevice = await Device.findOne({ deviceId });
+    if (existingDevice) {
+      return res.status(400).json({ message: 'Device already registered' });
+    }
     const device = new Device({ deviceId, relays: [] });
     await device.save();
     res.status(201).json({ message: 'Device registered successfully' });
