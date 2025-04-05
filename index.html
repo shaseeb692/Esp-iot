@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Device Control</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        #status {
+            font-weight: bold;
+        }
+        #response {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>WebSocket Device Control</h1>
+
+    <div>
+        <label for="deviceId">Device ID:</label>
+        <input type="text" id="deviceId" placeholder="Enter device ID" />
+    </div>
+
+    <div>
+        <label for="status">Status:</label>
+        <input type="checkbox" id="status" /> On/Off
+    </div>
+
+    <button id="sendMessage">Update Device Status</button>
+
+    <div id="status">
+        <p>Status: <span id="connectionStatus">Disconnected</span></p>
+    </div>
+
+    <div id="response">
+        <p>Response: <span id="serverResponse">None</span></p>
+    </div>
+
+    <script>
+        // Connect to WebSocket server
+        const socket = new WebSocket('ws://localhost:3000');
+
+        socket.onopen = () => {
+            document.getElementById('connectionStatus').innerText = 'Connected';
+        };
+
+        socket.onclose = () => {
+            document.getElementById('connectionStatus').innerText = 'Disconnected';
+        };
+
+        socket.onerror = (error) => {
+            console.error('WebSocket Error: ', error);
+            document.getElementById('connectionStatus').innerText = 'Error';
+        };
+
+        socket.onmessage = (event) => {
+            const response = JSON.parse(event.data);
+            document.getElementById('serverResponse').innerText = JSON.stringify(response);
+        };
+
+        // Send message to WebSocket server
+        document.getElementById('sendMessage').addEventListener('click', () => {
+            const deviceId = document.getElementById('deviceId').value;
+            const status = document.getElementById('status').checked;
+
+            if (!deviceId) {
+                alert('Please enter a device ID.');
+                return;
+            }
+
+            const message = {
+                deviceId: deviceId,
+                status: status
+            };
+
+            // Send the message as a JSON string
+            socket.send(JSON.stringify(message));
+        });
+    </script>
+</body>
+</html>
