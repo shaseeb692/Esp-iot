@@ -1,70 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>ESP IoT Dashboard</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      text-align: center;
-      padding: 40px;
-      background: #f0f4f8;
-    }
-    h1 {
-      color: #333;
-    }
-    .device {
-      margin-top: 20px;
-    }
-    button {
-      padding: 10px 20px;
-      font-size: 18px;
-      margin: 10px;
-      cursor: pointer;
-    }
-  </style>
+    <title>ESP LED Control</title>
+    <script>
+        async function updateLED(status) {
+            const deviceId = "DEVICE123";  
+            const response = await fetch("http://your-server-ip-or-domain.com/update-led", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ deviceId, ledStatus: status })
+            });
+            const data = await response.json();
+            document.getElementById("status").innerText = data.ledStatus ? "ON" : "OFF";
+        }
+    </script>
 </head>
 <body>
-  <h1>ESP IoT Device Control Panel</h1>
-  <div class="device">
-    <input type="text" id="deviceId" placeholder="Enter Device ID" />
-    <button onclick="getStatus()">Get Status</button>
-    <button onclick="turnOn()">Turn ON</button>
-    <button onclick="turnOff()">Turn OFF</button>
-    <p id="status">Status: -</p>
-  </div>
-
-  <script>
-    const API_BASE = "https://<your-vercel-domain>.vercel.app";
-
-    async function getStatus() {
-      const id = document.getElementById("deviceId").value;
-      const res = await fetch(`${API_BASE}/device/${id}`);
-      const data = await res.json();
-      document.getElementById("status").textContent = "Status: " + (data.status ? "ON" : "OFF");
-    }
-
-    async function turnOn() {
-      await updateStatus(true);
-    }
-
-    async function turnOff() {
-      await updateStatus(false);
-    }
-
-    async function updateStatus(status) {
-      const id = document.getElementById("deviceId").value;
-      const res = await fetch(`${API_BASE}/device`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ deviceId: id, status })
-      });
-      if (res.ok) {
-        document.getElementById("status").textContent = "Status: " + (status ? "ON" : "OFF");
-      } else {
-        alert("Failed to update");
-      }
-    }
-  </script>
+    <h1>ESP LED Control</h1>
+    <button onclick="updateLED(true)">Turn ON</button>
+    <button onclick="updateLED(false)">Turn OFF</button>
+    <h2>LED Status: <span id="status">OFF</span></h2>
 </body>
 </html>
