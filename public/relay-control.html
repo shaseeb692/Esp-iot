@@ -16,7 +16,7 @@
   <script>
     async function getRelays() {
       const deviceId = document.getElementById("deviceId").value;
-      const response = await fetch(`https://your-vercel-app.vercel.app/api/get-relays/${deviceId}`);
+      const response = await fetch(`https://esp-iot-ha.vercel.app/api/get-relays/${deviceId}`);  // Using the correct Vercel URL
       const data = await response.json();
 
       if (data.relays) {
@@ -31,7 +31,7 @@
     }
 
     async function toggleRelay(deviceId, relayId, status) {
-      const response = await fetch('https://your-vercel-app.vercel.app/api/update-relay', {
+      const response = await fetch('https://esp-iot-ha.vercel.app/api/update-relay', {  // Using the correct Vercel URL
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ deviceId, relayId, status })
