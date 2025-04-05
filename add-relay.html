@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Add Relay to Device</title>
+</head>
+<body>
+  <h1>Add Relay to Device</h1>
+  
+  <label for="chipId">ESP Chip ID:</label>
+  <input type="text" id="chipId" name="chipId">
+  <br>
+  
+  <label for="relayName">Relay Name (e.g., Light 1):</label>
+  <input type="text" id="relayName" name="relayName">
+  <br>
+  
+  <label for="relayId">Relay ID:</label>
+  <input type="number" id="relayId" name="relayId">
+  <br>
+  
+  <label for="relayCommand">Relay Command (on/off):</label>
+  <select id="relayCommand">
+    <option value="on">On</option>
+    <option value="off">Off</option>
+  </select>
+  <br>
+  
+  <button onclick="addRelay()">Add Relay</button>
+  
+  <div id="message"></div>
+
+  <script>
+    async function addRelay() {
+      const chipId = document.getElementById("chipId").value;
+      const relayName = document.getElementById("relayName").value;
+      const relayId = document.getElementById("relayId").value;
+      const relayCommand = document.getElementById("relayCommand").value;
+
+      if (!chipId || !relayName || !relayId || !relayCommand) {
+        document.getElementById("message").innerText = "Please fill in all fields.";
+        return;
+      }
+
+      // Construct relay command like r1on or r1off
+      const command = `r${relayId}${relayCommand}`;
+
+      const response = await fetch('https://your-vercel-app.vercel.app/api/add-relay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chipId, relayName, relayId, command })
+      });
+
+      const data = await response.json();
+      document.getElementById("message").innerText = data.message;
+    }
+  </script>
+</body>
+</html>
