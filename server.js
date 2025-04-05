@@ -2,6 +2,7 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const path = require('path');
 require('dotenv').config();
 
 const app = express();
@@ -9,11 +10,10 @@ const port = process.env.PORT || 3000;
 
 // Enable CORS for all origins or specify specific domain
 app.use(cors({
-    origin: ['https://esp-iot-ha.vercel.app'],
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization']
-  }));
-  
+  origin: ['https://esp-iot-ha.vercel.app'], // Frontend URL
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use(bodyParser.json());
 
@@ -75,6 +75,14 @@ app.post('/api/update-relay', async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error updating relay' });
   }
+});
+
+// Serve static files from the root (frontend)
+app.use(express.static(path.join(__dirname, 'frontend')));
+
+// Catch-all route to handle frontend (single-page app)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
 });
 
 app.listen(port, () => {
