@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relay Control</title>
+</head>
+<body>
+  <h1>Relay Control</h1>
+  <label for="deviceId">Device ID:</label>
+  <input type="text" id="deviceId" name="deviceId">
+  <button onclick="getRelays()">Get Relays</button>
+
+  <div id="relays"></div>
+
+  <script>
+    async function getRelays() {
+      const deviceId = document.getElementById("deviceId").value;
+      const response = await fetch(`https://your-vercel-app.vercel.app/api/get-relays/${deviceId}`);
+      const data = await response.json();
+
+      if (data.relays) {
+        let relaysHtml = '';
+        data.relays.forEach((relay, index) => {
+          relaysHtml += `<div>Relay ${relay.relayId}: <button onclick="toggleRelay('${deviceId}', ${relay.relayId}, ${!relay.status})">${relay.status ? 'OFF' : 'ON'}</button></div>`;
+        });
+        document.getElementById("relays").innerHTML = relaysHtml;
+      } else {
+        alert('Device not found');
+      }
+    }
+
+    async function toggleRelay(deviceId, relayId, status) {
+      const response = await fetch('https://your-vercel-app.vercel.app/api/update-relay', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId, relayId, status })
+      });
+
+      const result = await response.json();
+      alert(result.message);
+      getRelays();
+    }
+  </script>
+</body>
+</html>

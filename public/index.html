@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Device Registration</title>
+</head>
+<body>
+  <h1>Register New Device</h1>
+  <label for="deviceId">Device ID:</label>
+  <input type="text" id="deviceId" name="deviceId">
+  <button onclick="registerDevice()">Register Device</button>
+
+  <script>
+    async function registerDevice() {
+      const deviceId = document.getElementById("deviceId").value;
+      const response = await fetch('https://your-vercel-app.vercel.app/api/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ deviceId }),
+      });
+
+      const data = await response.json();
+      alert(data.message);
+    }
+  </script>
+</body>
+</html>
