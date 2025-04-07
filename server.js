@@ -31,24 +31,45 @@ const deviceSchema = new mongoose.Schema({
 const Device = mongoose.model('Device', deviceSchema);
 
 // API to register device
-app.post('/api/register', async (req, res) => {
-  const { chipId } = req.body;
-
+app.post("/api/register", async (req, res) => {
   try {
-    // Check if the device already exists
-    const existingDevice = await Device.findOne({ chipId });
-    if (existingDevice) {
-      return res.status(200).json({ message: 'Device already registered' });
+    const { deviceId, relays } = req.body;
+
+    if (!deviceId) {
+      return res.status(400).json({ message: "Device ID is required" });
     }
 
-    // If not, register new device
-    const device = new Device({ chipId, relays: [] });
-    await device.save();
-    res.status(201).json({ message: 'Device registered successfully' });
+    // Check if device already exists
+    const existingDevice = await Device.findOne({ deviceId });
+    if (existingDevice) {
+      return res.status(409).json({ message: "Device already registered" });
+    }
+
+    // Format relays (if any)
+    const formattedRelays = Array.isArray(relays) ? relays.map((relay, index) => ({
+      relayName: relay.relayName || `Relay ${index + 1}`,
+      onCommand: relay.onCommand || `r${index + 1}on`,
+      offCommand: relay.offCommand || `r${index + 1}off`,
+      color: relay.color || "#ffffff",
+      controlType: relay.controlType || "button",
+      sliderMax: parseInt(relay.sliderMax) || 255
+    })) : [];
+
+    // Create new device
+    const newDevice = new Device({
+      deviceId,
+      relays: formattedRelays
+    });
+
+    await newDevice.save();
+    res.status(201).json({ message: "Device and relays registered successfully" });
+
   } catch (error) {
-    res.status(500).json({ message: 'Error registering device' });
+    console.error("Registration Error:", error.message);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
+
 
 // API to add a relay to a device
 app.post('/api/add-relay', async (req, res) => {

@@ -1,18 +1,22 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const relaySchema = new mongoose.Schema({
-  relayId: Number,
   relayName: String,
-  status: Boolean, // true for ON, false for OFF
+  onCommand: String,
+  offCommand: String,
+  color: String,
+  controlType: String,
+  sliderMax: Number
 });
 
 const deviceSchema = new mongoose.Schema({
-  chipId: { type: String, unique: true },
-  deviceName: String,
-  ip: String, // Store the device IP to send commands
-  relays: [relaySchema],
+  deviceId: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+  relays: [relaySchema]
 });
 
-const Device = mongoose.model('Device', deviceSchema);
-
+const Device = mongoose.model("Device", deviceSchema);
 module.exports = Device;
