@@ -8,20 +8,22 @@ require('dotenv').config();
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Enable CORS for all origins or specify a specific domain
+// Enable CORS for specific origins
 app.use(cors({
-  origin: ['https://esp-iot-ha.vercel.app', 'http://127.0.0.1:5500'], // Allow your local server
+  origin: ['https://esp-iot-ha.vercel.app', 'http://127.0.0.1:5500'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-
 app.use(bodyParser.json());
 
 // MongoDB Connection
-mongoose.connect(process.env.MONGODB_URI, { useNewUrlParser: true, useUnifiedTopology: true })
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('Error connecting to MongoDB', err));
+mongoose.connect(process.env.MONGODB_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
+.then(() => console.log('Connected to MongoDB'))
+.catch(err => console.error('Error connecting to MongoDB', err));
 
 // Define the relay schema
 const relaySchema = new mongoose.Schema({
@@ -45,7 +47,7 @@ const deviceSchema = new mongoose.Schema({
 
 const Device = mongoose.model('Device', deviceSchema);
 
-// API to register device
+// API: Register device
 app.post('/api/register', async (req, res) => {
   const { deviceId, relays } = req.body;
 
@@ -55,11 +57,7 @@ app.post('/api/register', async (req, res) => {
       return res.status(200).json({ message: 'Device already registered' });
     }
 
-    const newDevice = new Device({
-      deviceId,
-      relays
-    });
-
+    const newDevice = new Device({ deviceId, relays });
     await newDevice.save();
     res.status(201).json({ message: 'Device registered successfully' });
   } catch (error) {
@@ -67,22 +65,22 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// API to get all registered devices
+// API: Get all registered devices
 app.get('/api/get-all-devices', async (req, res) => {
   try {
-    const devices = await Device.find(); // Fetch all devices from the database
+    const devices = await Device.find();
     res.status(200).json({ devices });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching devices' });
   }
 });
 
-// API to delete a device by its chipId
+// API: Delete device by chipId
 app.delete('/api/delete-device/:chipId', async (req, res) => {
   const { chipId } = req.params;
 
   try {
-    const device = await Device.findOneAndDelete({ chipId }); // Find the device by chipId and delete it
+    const device = await Device.findOneAndDelete({ chipId });
     if (!device) {
       return res.status(404).json({ message: 'Device not found' });
     }
@@ -92,19 +90,25 @@ app.delete('/api/delete-device/:chipId', async (req, res) => {
   }
 });
 
-// Serve static files (your index.html is at the root)
+// Serve static files
 app.use(express.static(path.join(__dirname)));
 
-// Catch-all route to handle frontend (single-page app)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'index.html'));  // Ensure this is correct path to index.html
-});
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
-
-// Route to serve devices.html
+// ✅ Route: Serve devices.html directly
 app.get('/devices.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'devices.html'));
+});
+
+// ✅ Optional clean route: /devices → devices.html
+app.get('/devices', (req, res) => {
+  res.sendFile(path.join(__dirname, 'devices.html'));
+});
+
+// Catch-all route: For frontend single-page apps or 404 fallback
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Start server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
 });
