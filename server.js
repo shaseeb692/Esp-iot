@@ -140,3 +140,28 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+// API to get all registered devices
+app.get('/api/get-all-devices', async (req, res) => {
+  try {
+    const devices = await Device.find(); // Fetch all devices from the database
+    res.status(200).json({ devices });  // Return the list of devices as a response
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching devices' });
+  }
+});
+
+// API to delete a device by its chipId
+app.delete('/api/delete-device/:chipId', async (req, res) => {
+  const { chipId } = req.params;
+
+  try {
+    const device = await Device.findOneAndDelete({ chipId }); // Find the device by chipId and delete it
+    if (!device) {
+      return res.status(404).json({ message: 'Device not found' });
+    }
+    res.status(200).json({ message: `Device ${chipId} deleted successfully` });
+  } catch (error) {
+    res.status(500).json({ message: 'Error deleting device' });
+  }
+});
