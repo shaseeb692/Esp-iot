@@ -34,13 +34,14 @@ const Device = mongoose.model('Device', deviceSchema);
 app.post("/api/register", async (req, res) => {
   try {
     const { deviceId, relays } = req.body;
+    console.log("Received device registration request:", req.body);
 
     if (!deviceId) {
       return res.status(400).json({ message: "Device ID is required" });
     }
 
     // Check if device already exists
-    const existingDevice = await Device.findOne({ deviceId });
+    const existingDevice = await Device.findOne({ chipId: deviceId });
     if (existingDevice) {
       return res.status(409).json({ message: "Device already registered" });
     }
@@ -57,7 +58,7 @@ app.post("/api/register", async (req, res) => {
 
     // Create new device
     const newDevice = new Device({
-      deviceId,
+      chipId: deviceId,
       relays: formattedRelays
     });
 
@@ -66,10 +67,9 @@ app.post("/api/register", async (req, res) => {
 
   } catch (error) {
     console.error("Registration Error:", error.message);
-    res.status(500).json({ message: "Internal server error" });
+    res.status(500).json({ message: "Internal server error", error: error.message });
   }
 });
-
 
 // API to add a relay to a device
 app.post('/api/add-relay', async (req, res) => {
@@ -88,7 +88,7 @@ app.post('/api/add-relay', async (req, res) => {
 
     res.status(200).json({ message: `Relay ${relayName} added to device ${chipId}` });
   } catch (error) {
-    res.status(500).json({ message: 'Error adding relay' });
+    res.status(500).json({ message: 'Error adding relay', error: error.message });
   }
 });
 
@@ -103,7 +103,7 @@ app.get('/api/get-relays/:chipId', async (req, res) => {
     }
     res.status(200).json({ relays: device.relays });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching relays' });
+    res.status(500).json({ message: 'Error fetching relays', error: error.message });
   }
 });
 
@@ -127,7 +127,7 @@ app.post('/api/update-relay', async (req, res) => {
     await device.save();
     res.status(200).json({ message: 'Relay status updated successfully' });
   } catch (error) {
-    res.status(500).json({ message: 'Error updating relay' });
+    res.status(500).json({ message: 'Error updating relay', error: error.message });
   }
 });
 
@@ -152,7 +152,7 @@ app.post('/api/send-command', async (req, res) => {
 
     res.status(200).json({ message: `Command ${command} sent to device ${chipId}` });
   } catch (error) {
-    res.status(500).json({ message: 'Error sending command to ESP device' });
+    res.status(500).json({ message: 'Error sending command to ESP device', error: error.message });
   }
 });
 
@@ -181,13 +181,15 @@ app.get('/api/get-all-devices', async (req, res) => {
     const devices = await Device.find({}, 'chipId');
     res.status(200).json({ devices });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching devices' });
+    res.status(500).json({ message: 'Error fetching devices', error: error.message });
   }
 });
 
 // Delete a device
 app.delete('/api/delete-device/:chipId', async (req, res) => {
   const { chipId } = req.params;
+  console.log(`Attempting to delete device with chipId: ${chipId}`);  // Log chipId
+
   try {
     const result = await Device.deleteOne({ chipId });
     if (result.deletedCount === 0) {
@@ -195,6 +197,7 @@ app.delete('/api/delete-device/:chipId', async (req, res) => {
     }
     res.status(200).json({ message: `Device ${chipId} deleted successfully` });
   } catch (error) {
-    res.status(500).json({ message: 'Error deleting device' });
+    console.error("Error deleting device:", error.message);
+    res.status(500).json({ message: 'Error deleting device', error: error.message });
   }
 });
