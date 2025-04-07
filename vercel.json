@@ -4,10 +4,6 @@
     {
       "src": "server.js",
       "use": "@vercel/node"
-    },
-    {
-      "src": "*.html",
-      "use": "@vercel/static"
     }
   ],
   "routes": [
@@ -18,10 +14,6 @@
     {
       "src": "/Id-:deviceId.html",
       "dest": "/server.js"
-    },
-    {
-      "src": "/devices.html",
-      "dest": "/devices.html"
     },
     {
       "src": "/",
