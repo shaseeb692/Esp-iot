@@ -11,26 +11,26 @@
 
   <script>
     async function fetchDevices() {
-  const res = await fetch('https://esp-iot-ha.vercel.app/api/get-all-devices');
-  const data = await res.json();
+      const res = await fetch('https://esp-iot-ha.vercel.app/api/get-all-devices');
+      const data = await res.json();
 
-  const deviceList = document.getElementById("deviceList");
-  deviceList.innerHTML = '';
+      const deviceList = document.getElementById("deviceList");
+      deviceList.innerHTML = '';
 
-  data.devices.forEach(device => {
-    const div = document.createElement("div");
-    div.innerHTML = `
-      <strong>Device ID:</strong> ${device.deviceId}
-      <button onclick="deleteDevice('${device.deviceId}')">Delete</button>
-    `;
-    deviceList.appendChild(div);
-  });
-}
+      data.devices.forEach(device => {
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <strong>Device ID:</strong> ${device.deviceId}
+          <button onclick="deleteDevice('${device.deviceId}')">Delete</button>
+        `;
+        deviceList.appendChild(div);
+      });
+    }
 
-    async function deleteDevice(chipId) {
-      if (!confirm(`Are you sure you want to delete device ${chipId}?`)) return;
+    async function deleteDevice(deviceId) {  // Use deviceId
+      if (!confirm(`Are you sure you want to delete device ${deviceId}?`)) return;
 
-      const res = await fetch(`/api/delete-device/${deviceId}`, {
+      const res = await fetch(`/api/delete-device/${deviceId}`, {  // Use deviceId
         method: 'DELETE'
       });
 
