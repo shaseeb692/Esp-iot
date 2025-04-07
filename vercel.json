@@ -16,6 +16,10 @@
       "dest": "/server.js"
     },
     {
+      "src": "/devices.html",
+      "dest": "/devices.html"
+    },
+    {
       "src": "/",
       "dest": "/index.html"
     }
