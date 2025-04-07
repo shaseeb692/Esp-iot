@@ -1,30 +1,121 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Device Registration</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Register Device & Relays</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .relay-block {
+      border: 1px solid #ccc;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+    }
+    label {
+      display: block;
+      margin-top: 10px;
+    }
+    input[type="text"], input[type="color"], input[type="number"] {
+      width: 100%;
+      padding: 5px;
+      margin-top: 5px;
+    }
+    .relay-type {
+      display: flex;
+      gap: 15px;
+      margin-top: 5px;
+    }
+    .relay-type label {
+      display: flex;
+      align-items: center;
+    }
+    button {
+      margin-top: 15px;
+      padding: 10px 20px;
+    }
+  </style>
 </head>
 <body>
-  <h1>Register New Device</h1>
+
+  <h1>Register Device & Add Relays</h1>
+
   <label for="deviceId">Device ID:</label>
-  <input type="text" id="deviceId" name="deviceId">
+  <input type="text" id="deviceId" placeholder="Enter Chip ID">
+
+  <div id="relays-container"></div>
+
+  <button onclick="addRelay()">Add Relay</button>
   <button onclick="registerDevice()">Register Device</button>
 
   <script>
+    let relayCount = 0;
+
+    function addRelay() {
+      relayCount++;
+      const container = document.getElementById("relays-container");
+      const block = document.createElement("div");
+      block.className = "relay-block";
+      block.innerHTML = `
+        <h3>Relay ${relayCount}</h3>
+        <label>Relay Name:</label>
+        <input type="text" name="relayName">
+
+        <label>Command to Turn ON:</label>
+        <input type="text" name="onCommand" placeholder="e.g., r1on">
+
+        <label>Command to Turn OFF:</label>
+        <input type="text" name="offCommand" placeholder="e.g., r1off">
+
+        <label>Color:</label>
+        <input type="color" name="color">
+
+        <label>Control Type:</label>
+        <div class="relay-type">
+          <label><input type="radio" name="type${relayCount}" value="button" checked> Button</label>
+          <label><input type="radio" name="type${relayCount}" value="slider"> Slider</label>
+        </div>
+
+        <label>Slider Max Value (if slider):</label>
+        <input type="number" name="sliderMax" min="1" max="255" value="255">
+      `;
+      container.appendChild(block);
+    }
+
     async function registerDevice() {
-      const deviceId = document.getElementById("deviceId").value;
-      const response = await fetch('https://esp-iot-ha.vercel.app/api/register', {  // Using the correct Vercel URL
+      const deviceId = document.getElementById("deviceId").value.trim();
+      if (!deviceId) return alert("Please enter a device ID");
+
+      const relays = [];
+      const blocks = document.querySelectorAll(".relay-block");
+
+      blocks.forEach(block => {
+        const relayName = block.querySelector('input[name="relayName"]').value;
+        const onCommand = block.querySelector('input[name="onCommand"]').value;
+        const offCommand = block.querySelector('input[name="offCommand"]').value;
+        const color = block.querySelector('input[name="color"]').value;
+        const controlType = block.querySelector('input[type="radio"]:checked').value;
+        const sliderMax = block.querySelector('input[name="sliderMax"]').value;
+
+        relays.push({ relayName, onCommand, offCommand, color, controlType, sliderMax });
+      });
+
+      const response = await fetch('https://esp-iot-ha.vercel.app/api/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ deviceId }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId, relays })
       });
 
       const data = await response.json();
       alert(data.message);
     }
+
+    // Add the first relay block on page load
+    addRelay();
   </script>
+
 </body>
 </html>
