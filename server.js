@@ -89,20 +89,58 @@ app.delete('/api/delete-device/:deviceId', async (req, res) => {
 app.get('/Id-:deviceId.html', async (req, res) => {
   const { deviceId } = req.params;
 
-  // Optional: only serve if device exists
+  // Fetch device details from the database
   const device = await Device.findOne({ deviceId });
   if (!device) {
     return res.status(404).send('Device not found');
   }
 
-  const templatePath = path.join(__dirname, 'device-template.html');
-  fs.readFile(templatePath, 'utf8', (err, html) => {
-    if (err) return res.status(500).send('Template not found.');
+  // Generate HTML dynamically
+  let htmlContent = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+      <title>Control ${deviceId}</title>
+    </head>
+    <body>
+      <h1>Device Control: ${deviceId}</h1>
+      <div id="controls"></div>
+      <script>
+        const deviceId = "${deviceId}";
 
-    const filledHtml = html.replace(/{{deviceId}}/g, deviceId);
-    res.setHeader('Content-Type', 'text/html');
-    res.send(filledHtml);
-  });
+        function sendCommand(cmd) {
+          fetch('/api/send-command', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ command: cmd, deviceId })
+          })
+          .then(res => res.json())
+          .then(data => alert(data.message));
+        }
+
+        // Render control UI dynamically based on device data
+        const container = document.getElementById("controls");
+        ${device.relays.map((relay) => {
+          if (relay.controlType === 'switch') {
+            return `
+              container.innerHTML += '<p>${relay.relayName}</p>' +
+              '<button onclick="sendCommand(\'${relay.onCommand}\')">ON</button>' +
+              '<button onclick="sendCommand(\'${relay.offCommand}\')">OFF</button><hr/>';
+          } else if (relay.controlType === 'slider') {
+            return `
+              container.innerHTML += '<p>${relay.relayName}</p>' +
+              '<input type="range" min="0" max="${relay.sliderMax}" onchange="sendCommand(this.value)" /><hr/>';
+          }
+        }).join('')}
+      </script>
+    </body>
+    </html>
+  `;
+
+  res.setHeader('Content-Type', 'text/html');
+  res.send(htmlContent);
 });
 
 // Serve static files (like index.html, styles, scripts, etc.)

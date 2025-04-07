@@ -21,6 +21,7 @@
         const div = document.createElement("div");
         div.innerHTML = `
           <strong>Device ID:</strong> ${device.deviceId}
+          <a href="/Id-${device.deviceId}.html">View Device</a>
           <button onclick="deleteDevice('${device.deviceId}')">Delete</button>
         `;
         deviceList.appendChild(div);
