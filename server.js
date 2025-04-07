@@ -96,8 +96,7 @@ app.get('/Id-:deviceId.html', async (req, res) => {
   }
 
   // Generate HTML dynamically
-  let htmlContent = `
-    <!DOCTYPE html>
+  let htmlContent = `<!DOCTYPE html>
     <html lang="en">
     <head>
       <meta charset="UTF-8" />
@@ -122,22 +121,21 @@ app.get('/Id-:deviceId.html', async (req, res) => {
 
         // Render control UI dynamically based on device data
         const container = document.getElementById("controls");
-        ${device.relays.map((relay) => {
-          if (relay.controlType === 'switch') {
-            return `
-              container.innerHTML += '<p>${relay.relayName}</p>' +
-              '<button onclick="sendCommand(\'${relay.onCommand}\')">ON</button>' +
-              '<button onclick="sendCommand(\'${relay.offCommand}\')">OFF</button><hr/>';
-          } else if (relay.controlType === 'slider') {
-            return `
-              container.innerHTML += '<p>${relay.relayName}</p>' +
-              '<input type="range" min="0" max="${relay.sliderMax}" onchange="sendCommand(this.value)" /><hr/>';
-          }
-        }).join('')}
+${device.relays.map((relay) => {
+  if (relay.controlType === 'switch') {
+    return `
+      container.innerHTML += '<p>${relay.relayName}</p>' +
+      '<button onclick="sendCommand(\'${relay.onCommand}\')">ON</button>' +
+      '<button onclick="sendCommand(\'${relay.offCommand}\')">OFF</button><hr/>';
+  } else if (relay.controlType === 'slider') {
+    return `
+      container.innerHTML += '<p>${relay.relayName}</p>' +
+      '<input type="range" min="0" max="${relay.sliderMax}" onchange="sendCommand(this.value)" /><hr/>';
+  }
+}).join('')}
       </script>
     </body>
-    </html>
-  `;
+    </html>`;
 
   res.setHeader('Content-Type', 'text/html');
   res.send(htmlContent);
@@ -159,7 +157,5 @@ app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Start server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
-});
+// Export express app for Vercel's serverless function
+module.exports = app;
