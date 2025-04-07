@@ -46,9 +46,7 @@ const Device = mongoose.model('Device', deviceSchema);
 
 // API to register device
 app.post('/api/register', async (req, res) => {
-  const { deviceId, relays } = req.body; // This will capture deviceId and relays
-
-  console.log('Received registration data:', req.body);  // Log to see if it's correct
+  const { deviceId, relays } = req.body;
 
   try {
     const existingDevice = await Device.findOne({ deviceId });
@@ -64,88 +62,15 @@ app.post('/api/register', async (req, res) => {
     await newDevice.save();
     res.status(201).json({ message: 'Device registered successfully' });
   } catch (error) {
-    console.error('Error registering device:', error);
     res.status(500).json({ message: 'Error registering device' });
   }
-});
-
-// API to add a relay to a device
-app.post('/api/add-relay', async (req, res) => {
-  const { deviceId, relayName, relayId } = req.body;
-
-  try {
-    const device = await Device.findOne({ deviceId });
-    if (!device) {
-      return res.status(404).json({ message: 'Device not found' });
-    }
-
-    // Add relay to the device's relays array
-    const newRelay = { relayId, relayName, status: false };
-    device.relays.push(newRelay);
-    await device.save();
-
-    res.status(200).json({ message: `Relay ${relayName} added to device ${deviceId}` });
-  } catch (error) {
-    res.status(500).json({ message: 'Error adding relay' });
-  }
-});
-
-// API to get relays for a device
-app.get('/api/get-relays/:deviceId', async (req, res) => {
-  const { deviceId } = req.params;
-
-  try {
-    const device = await Device.findOne({ deviceId });
-    if (!device) {
-      return res.status(404).json({ message: 'Device not found' });
-    }
-    res.status(200).json({ relays: device.relays });
-  } catch (error) {
-    res.status(500).json({ message: 'Error fetching relays' });
-  }
-});
-
-// API to update relay status
-app.post('/api/update-relay', async (req, res) => {
-  const { deviceId, relayId, status } = req.body;
-
-  try {
-    const device = await Device.findOne({ deviceId });
-    if (!device) {
-      return res.status(404).json({ message: 'Device not found' });
-    }
-
-    const relay = device.relays.find(r => r.relayId === relayId);
-    if (relay) {
-      relay.status = status;
-    } else {
-      device.relays.push({ relayId, relayName: `Relay ${relayId}`, status });
-    }
-
-    await device.save();
-    res.status(200).json({ message: 'Relay status updated successfully' });
-  } catch (error) {
-    res.status(500).json({ message: 'Error updating relay' });
-  }
-});
-
-// Serve static files from the frontend (React or other)
-app.use(express.static(path.join(__dirname, 'frontend')));
-
-// Catch-all route to handle frontend (single-page app)
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, 'frontend', 'index.html'));
-});
-
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
 });
 
 // API to get all registered devices
 app.get('/api/get-all-devices', async (req, res) => {
   try {
     const devices = await Device.find(); // Fetch all devices from the database
-    res.status(200).json({ devices });  // Return the list of devices as a response
+    res.status(200).json({ devices });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching devices' });
   }
@@ -166,5 +91,14 @@ app.delete('/api/delete-device/:chipId', async (req, res) => {
   }
 });
 
-// Serve static files from the frontend (React or other)
-app.use(express.static(path.join(__dirname, 'frontend')));
+// Serve static files (your index.html is at the root)
+app.use(express.static(path.join(__dirname)));
+
+// Catch-all route to handle frontend (single-page app)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));  // Ensure this is correct path to index.html
+});
+
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
