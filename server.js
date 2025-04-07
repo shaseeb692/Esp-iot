@@ -3,12 +3,12 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const path = require('path');
+const fs = require('fs');
 require('dotenv').config();
 
 const app = express();
 const port = process.env.PORT || 3000;
 
-// Enable CORS for specific origins
 app.use(cors({
   origin: ['https://esp-iot-ha.vercel.app', 'http://127.0.0.1:5500'],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
@@ -25,7 +25,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('Error connecting to MongoDB', err));
 
-// Define the relay schema
+// Schema Definitions
 const relaySchema = new mongoose.Schema({
   relayName: String,
   onCommand: String,
@@ -35,7 +35,6 @@ const relaySchema = new mongoose.Schema({
   sliderMax: Number
 });
 
-// Define the device schema
 const deviceSchema = new mongoose.Schema({
   deviceId: {
     type: String,
@@ -47,10 +46,9 @@ const deviceSchema = new mongoose.Schema({
 
 const Device = mongoose.model('Device', deviceSchema);
 
-// API: Register device
+// API Routes
 app.post('/api/register', async (req, res) => {
   const { deviceId, relays } = req.body;
-
   try {
     const existingDevice = await Device.findOne({ deviceId });
     if (existingDevice) {
@@ -65,7 +63,6 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// API: Get all registered devices
 app.get('/api/get-all-devices', async (req, res) => {
   try {
     const devices = await Device.find();
@@ -75,12 +72,10 @@ app.get('/api/get-all-devices', async (req, res) => {
   }
 });
 
-// API: Delete device by chipId
 app.delete('/api/delete-device/:deviceId', async (req, res) => {
   const { deviceId } = req.params;
-
   try {
-    const device = await Device.findOneAndDelete({ deviceId }); // ✅ Correct
+    const device = await Device.findOneAndDelete({ deviceId });
     if (!device) {
       return res.status(404).json({ message: 'Device not found' });
     }
@@ -90,21 +85,38 @@ app.delete('/api/delete-device/:deviceId', async (req, res) => {
   }
 });
 
+// 🔥 New Route: Serve dynamic page like /Id-test001.html
+app.get('/Id-:deviceId.html', async (req, res) => {
+  const { deviceId } = req.params;
 
-// Serve static files
+  // Optional: only serve if device exists
+  const device = await Device.findOne({ deviceId });
+  if (!device) {
+    return res.status(404).send('Device not found');
+  }
+
+  const templatePath = path.join(__dirname, 'device-template.html');
+  fs.readFile(templatePath, 'utf8', (err, html) => {
+    if (err) return res.status(500).send('Template not found.');
+
+    const filledHtml = html.replace(/{{deviceId}}/g, deviceId);
+    res.setHeader('Content-Type', 'text/html');
+    res.send(filledHtml);
+  });
+});
+
+// Serve static files (like index.html, styles, scripts, etc.)
 app.use(express.static(path.join(__dirname)));
 
-// ✅ Route: Serve devices.html directly
+// Short route for devices.html
 app.get('/devices.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'devices.html'));
 });
-
-// ✅ Optional clean route: /devices → devices.html
 app.get('/devices', (req, res) => {
   res.sendFile(path.join(__dirname, 'devices.html'));
 });
 
-// Catch-all route: For frontend single-page apps or 404 fallback
+// Fallback to index
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
