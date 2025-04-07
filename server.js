@@ -10,10 +10,11 @@ const port = process.env.PORT || 3000;
 
 // Enable CORS for all origins or specify a specific domain
 app.use(cors({
-  origin: ['https://esp-iot-ha.vercel.app'], // Frontend URL
+  origin: ['https://esp-iot-ha.vercel.app', 'http://127.0.0.1:5500'], // Allow your local server
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
+
 
 app.use(bodyParser.json());
 
