@@ -165,3 +165,6 @@ app.delete('/api/delete-device/:chipId', async (req, res) => {
     res.status(500).json({ message: 'Error deleting device' });
   }
 });
+
+// Serve static files from the frontend (React or other)
+app.use(express.static(path.join(__dirname, 'frontend')));
