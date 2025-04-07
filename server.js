@@ -102,3 +102,8 @@ app.get('*', (req, res) => {
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
+
+// Route to serve devices.html
+app.get('/devices.html', (req, res) => {
+  res.sendFile(path.join(__dirname, 'devices.html'));
+});
