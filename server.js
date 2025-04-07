@@ -85,9 +85,9 @@ app.delete('/api/delete-device/:deviceId', async (req, res) => {
   }
 });
 
-// 🔥 New Route: Serve dynamic page like /Id-test001.html
-app.get('/Id-:deviceId.html', async (req, res) => {
-  const { deviceId } = req.params;
+// 🔥 New Route: Serve dynamic page like /relay-control.html
+app.get('/relay-control.html', async (req, res) => {
+  const { deviceId } = req.query; // Get deviceId from query string (e.g., ?deviceId=123)
 
   // Fetch device details from the database
   const device = await Device.findOne({ deviceId });
@@ -101,10 +101,10 @@ app.get('/Id-:deviceId.html', async (req, res) => {
     <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-      <title>Control ${deviceId}</title>
+      <title>Relay Control: ${deviceId}</title>
     </head>
     <body>
-      <h1>Device Control: ${deviceId}</h1>
+      <h1>Relay Control: ${deviceId}</h1>
       <div id="controls"></div>
       <script>
         const deviceId = "${deviceId}";
@@ -123,7 +123,7 @@ app.get('/Id-:deviceId.html', async (req, res) => {
         const container = document.getElementById("controls");
 ${device.relays.map((relay) => {
   if (relay.controlType === 'switch') {
-    return `
+    return `  
       container.innerHTML += '<p>${relay.relayName}</p>' +
       '<button onclick="sendCommand(\'${relay.onCommand}\')">ON</button>' +
       '<button onclick="sendCommand(\'${relay.offCommand}\')">OFF</button><hr/>';

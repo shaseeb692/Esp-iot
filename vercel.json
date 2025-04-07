@@ -20,6 +20,10 @@
       "dest": "/server.js"
     },
     {
+      "src": "/relay-control.html",
+      "dest": "/relay-control.html"
+    },
+    {
       "src": "/devices.html",
       "dest": "/devices.html"
     },
