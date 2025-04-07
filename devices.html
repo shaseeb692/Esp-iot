@@ -30,7 +30,7 @@
     async function deleteDevice(chipId) {
       if (!confirm(`Are you sure you want to delete device ${chipId}?`)) return;
 
-      const res = await fetch(`/api/delete-device/${chipId}`, {
+      const res = await fetch(`/api/delete-device/${deviceId}`, {
         method: 'DELETE'
       });
 

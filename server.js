@@ -76,19 +76,20 @@ app.get('/api/get-all-devices', async (req, res) => {
 });
 
 // API: Delete device by chipId
-app.delete('/api/delete-device/:chipId', async (req, res) => {
-  const { chipId } = req.params;
+app.delete('/api/delete-device/:deviceId', async (req, res) => {
+  const { deviceId } = req.params;
 
   try {
-    const device = await Device.findOneAndDelete({ chipId });
+    const device = await Device.findOneAndDelete({ deviceId }); // ✅ Correct
     if (!device) {
       return res.status(404).json({ message: 'Device not found' });
     }
-    res.status(200).json({ message: `Device ${chipId} deleted successfully` });
+    res.status(200).json({ message: `Device ${deviceId} deleted successfully` });
   } catch (error) {
     res.status(500).json({ message: 'Error deleting device' });
   }
 });
+
 
 // Serve static files
 app.use(express.static(path.join(__dirname)));
